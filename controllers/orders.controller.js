@@ -4,12 +4,14 @@ const { Cart } = require("../models/cart.model")
 const { ProductInCart } = require("../models/productInCart.model")
 const { Order } = require("../models/order.model")
 const { ProductInOrder } = require("../models/productInOrder.model")
+const { User } = require("../models/user.model")
 
 // Utils
 const { catchAsync } = require("../utils/catchAsync")
 const { filterObj } = require("../utils/filterObj")
 const { AppError } = require("../utils/appError")
-const { formatUserCart } = require("../utils/queryFormat")
+const { formatUserCart, formatUserOrder } = require("../utils/queryFormat")
+const { Email } = require("../utils/email")
 
 exports.getUserCart = catchAsync(async (req, res, next) => {
   const { currentUser } = req
@@ -271,5 +273,60 @@ exports.purchaseOrder = catchAsync(async (req, res, next) => {
     await Promise.all(promisesProductInOrder)
   }
 
+  //Part 2
+  // Send email with Order receipt
+  const dataUser = await User.findOne({
+    attributes: { exclude: ["password", "status", "role"] },
+  })
+
+  const listProducts = await ProductInOrder.findAll({
+    attributes: ["id", "price", "quantity"],
+    include: [
+      {
+        model: Order,
+        attributes: ["totalPrice"],
+        where: { userId: currentUser.id },
+      },
+      { model: Product, attributes: ["name", "description"] },
+    ],
+  })
+
+  await new Email(dataUser.email).sendOrders(
+    listProducts,
+    listProducts[0].order.totalPrice,
+    dataUser.name
+  )
+
   res.status(200).json({ status: "success" })
+})
+
+exports.getUserOrder = catchAsync(async (req, res, next) => {
+  const { currentUser } = req
+
+  const order = await Order.findOne({
+    attributes: { exclude: ["userId", "status"] },
+    where: { userId: currentUser.id, status: "purchased" },
+    include: [
+      {
+        model: ProductInOrder,
+        attributes: { exclude: ["orderId", "status"] },
+        where: { status: "purchased" },
+        include: [
+          {
+            model: Product,
+            attributes: {
+              exclude: ["id", "userId", "price", "quantity", "status"],
+            },
+          },
+        ],
+      },
+    ],
+  })
+
+  const formattedOrder = formatUserOrder(order)
+
+  res.status(200).json({
+    status: "success",
+    data: { order: formattedOrder },
+  })
 })

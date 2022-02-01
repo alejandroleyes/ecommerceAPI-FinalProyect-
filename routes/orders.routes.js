@@ -6,6 +6,7 @@ const {
   getUserCart,
   updateProductCart,
   purchaseOrder,
+  getUserOrder,
 } = require("../controllers/orders.controller")
 
 // Middlewares
@@ -42,5 +43,6 @@ router.get("/purchase", purchaseOrder)
 // Create order
 
 // Get user's orders
+router.get("/get-orders/", getUserOrder)
 
 module.exports = { ordersRouter: router }

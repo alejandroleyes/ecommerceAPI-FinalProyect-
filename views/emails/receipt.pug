@@ -1,0 +1,36 @@
+extends base
+
+block receiptContent
+  p Hi,  #{name}
+  p You successfully purchased your products! Total price #{totalPrice} $us
+  p Here is a resume:
+ 
+
+  table(role='presentation' cellspacing='0' cellpadding='0' border='0')
+    tbody
+      tr
+        th #
+        th Product
+        th Description
+        th Price
+        th Quantity
+        th Total
+      each product in products
+        tr 
+          td.align-center #{product.id}
+          td.align-center #{product.product.name}
+          td.align-center #{product.product.description}
+          td.align-center #{product.price}
+          td.align-center #{product.quantity}
+          td.align-center #{product.price * product.quantity}
+      tr 
+        td.align-center
+        td.align-center
+        td.align-center
+        td.align-center
+        td.align-center
+        td.align-center #{totalPrice} $us 
+    
+  p
+  p Thank you!, If your need help please contact with support staff!
+  p Good luck! Hope it works.

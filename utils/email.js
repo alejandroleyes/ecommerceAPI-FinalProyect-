@@ -13,7 +13,7 @@ class Email {
   }
 
   createTransport() {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "production") {
       return nodemailer.createTransport({
         service: "SendGrid",
         auth: {
@@ -59,6 +59,10 @@ class Email {
 
   async sendWelcome(username, email) {
     await this.send("welcome", "New account!", { username, email })
+  }
+
+  async sendOrders(products, totalPrice, name) {
+    await this.send("receipt", "Order Receipt!", { products, totalPrice, name })
   }
 }
 
