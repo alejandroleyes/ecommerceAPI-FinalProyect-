@@ -6,7 +6,8 @@ const {
   getUserCart,
   updateProductCart,
   purchaseOrder,
-  getUserOrder,
+  getAllOrders,
+  getOrderById,
 } = require("../controllers/orders.controller")
 
 // Middlewares
@@ -19,6 +20,9 @@ const { protectSession } = require("../middlewares/auth.middleware")
 const router = express.Router()
 
 router.use(protectSession)
+
+// Get user's orders
+router.get("/", getAllOrders)
 
 // Get user's cart
 router.get("/get-cart", getUserCart)
@@ -34,15 +38,10 @@ router.patch(
   updateProductCart
 )
 
-//purchase
-
-router.get("/purchase", purchaseOrder)
-
 // Remove product from cart
 
 // Create order
-
-// Get user's orders
-router.get("/get-orders/", getUserOrder)
+router.get("/purchase-order", purchaseOrder)
+router.get("/get-order-by-id/:id", getOrderById)
 
 module.exports = { ordersRouter: router }

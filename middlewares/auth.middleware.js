@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { Op } = require('sequelize');
+const { promisify } = require('util');
 
 // require('crypto').randomBytes(64).toString('hex')
 
@@ -22,6 +23,8 @@ exports.protectSession = catchAsync(async (req, res, next) => {
 		req.headers.authorization.startsWith('Bearer')
 	) {
 		token = req.headers.authorization.split(' ')[1];
+	} else if (req.cookies.jwt) {
+		token = req.cookies.jwt;
 	}
 
 	if (!token) {
@@ -29,7 +32,9 @@ exports.protectSession = catchAsync(async (req, res, next) => {
 	}
 
 	// Validate token
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+	if (!decoded) return next(new AppError('Invalid token', 401));
 
 	const user = await User.findOne({
 		attributes: { exclude: ['password'] },
